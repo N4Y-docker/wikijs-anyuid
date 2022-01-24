@@ -1,0 +1,46 @@
+name: Docker
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  IMAGE_NAME: wikijs-anyuid
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@a40b8845c0683271d9f53dfcb887a7e181d3918b # renovate: tag=0.9.1
+        with:
+          access_token: ${{ github.token }}
+
+      - uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # renovate: tag=v2
+
+      - name: Identify version to tag
+        run: |
+          echo "IMAGE_TAG=$(fgrep "FROM ghcr.io/requarks/wiki" Dockerfile | tail -1 | cut -d@ -f1 | rev | cut -d: -f1 | rev)" >> $GITHUB_ENV
+
+      - name: Build image
+        run: docker build . --file Dockerfile --tag "$IMAGE_NAME"
+
+      - name: Log into registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+
+      - name: Push image
+        run: |
+          IMAGE_ID="ghcr.io/${{ github.repository }}/$IMAGE_NAME"
+          IMAGE_ID_VERSIONED="${IMAGE_ID}:${IMAGE_TAG}"
+
+          # Use Docker `latest` tag convention
+          echo IMAGE_ID="$IMAGE_ID"
+          echo IMAGE_ID_VERSIONED="$IMAGE_ID_VERSIONED"
+
+          docker tag "$IMAGE_NAME" "$IMAGE_ID_VERSIONED"
+          docker tag "$IMAGE_NAME" "$IMAGE_ID:latest"
+          docker push "$IMAGE_ID_VERSIONED"
+          docker push "$IMAGE_ID:latest"

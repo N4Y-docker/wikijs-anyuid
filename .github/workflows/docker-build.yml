@@ -1,0 +1,21 @@
+name: Docker
+
+on:
+  pull_request:
+
+env:
+  IMAGE_NAME: wikijs-anyuid
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # renovate: tag=v2
+
+      - name: Identify version to tag
+        run: |
+          echo "IMAGE_TAG=$(fgrep "FROM ghcr.io/requarks/wiki" Dockerfile | tail -1 | cut -d@ -f1 | rev | cut -d: -f1 | rev)" >> $GITHUB_ENV
+
+      - name: Build image
+        run: docker build . --file Dockerfile
