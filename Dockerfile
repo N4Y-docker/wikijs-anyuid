@@ -1,4 +1,4 @@
-FROM ghcr.io/requarks/wiki:2.5@sha256:68f0d1848261ae76492ba358e30a96a76fed5d97a3fff381656082bf90f70d7e
+FROM ghcr.io/requarks/wiki:2.5@sha256:af71a17dc27ccc4c768591b1c504631ed820d9d13d4e8c325be4232c0035638c
 
 LABEL org.opencontainers.image.source https://github.com/N4Y-docker/wikijs-anyuid
 
